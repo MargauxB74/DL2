@@ -7,8 +7,10 @@ Also, it plots some generated examples to assess the power of network in learnin
 Results are saved in ../images/DBN_analysis
 """
 
+from black import out
 import utils
 import principal_DBN_alpha as DBN
+import principal_RBM_alpha as RBM
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -33,16 +35,15 @@ def DBN_quant_analysis(char='3', num_layers=3, neurons=None, lr=0.2, n_epochs=20
 
     dbn, err_eqm = DBN.pretrain_DNN(dbn, n_epochs, lr, batch_size, X_train)
 
+    #RBM.generer_images_RBM(dbn, 3, )
     if visualize:
         plt.figure()
         plt.plot(range(n_epochs), err_eqm[layer])
         plt.title('EQM: lr={0}, bs={1}, epochs={2}, neruons={3}, char={4}, layer={5}'.format(lr, batch_size, n_epochs, "/".join([str(n[1]) for n in neurons]), char, layer))
         plt.xlabel('epochs')
         plt.ylabel('EQM')
-        if imagepath.split('/')[-1] != "DBN_analysis":
-            plt.savefig('{0}.png'.format(outputpath))
+        #plt.savefig('{0}.png'.format(outputpath))
         plt.show()
-
     return err_eqm
 
 def DBN_qualt_analysis(dbn, X_train, nb_images=3, nb_iterations=1000, outputpath = imagepath):
@@ -54,7 +55,7 @@ def DBN_qualt_analysis(dbn, X_train, nb_images=3, nb_iterations=1000, outputpath
 
 
 #initial parameters
-X_train = utils.lire_alpha_digit('0')
+X_train = utils.lire_alpha_digit('3')
 p = X_train.shape[1]
 q = 240
 lr = 0.15

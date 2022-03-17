@@ -1,4 +1,4 @@
-from utils import load_mnist
+import  utils
 
 import principal_DNN_MNIST as DNN
 import principal_DBN_alpha as DBN
@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ## initialization
-X, X_test, y, y_test = load_mnist()
+X, X_test, y, y_test = utils.fetch_mnist_digits_data(6000)
 imagepath = '../images/DNN_analysis/'
 
 ## select a number in [1,2,3]

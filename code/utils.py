@@ -1,13 +1,48 @@
-import os 
-import requests 
-import scipy.io as sio
-from sklearn.datasets import fetch_openml
+import requests
+import os
+from scipy.io import loadmat
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_openml
 from sklearn.preprocessing import LabelBinarizer
-from scipy.special import expit
 
 
-########## Partie 2 - Data loading 
+def lire_alpha_digit(focus_list, path=None):
+    if path == None: 
+        alphadigs_url = 'https://cs.nyu.edu/~roweis/data/binaryalphadigs.mat'
+        r = requests.get(alphadigs_url, allow_redirects=True)
+        filename = 'binaryalphadigs.mat'
+        open('../data/' + filename, 'wb').write(r.content)
+        path = '../data/binaryalphadigs.mat'
+        print('Download completed, data available in /data/binaryalphadigs.mat')
+    
+    elif os.path.exists(path):
+        print('Path correct')
+
+    data_dic = loadmat(path)
+
+    digit2idx = {}
+    for i, digit in enumerate(data_dic['classlabels'][0]):
+        digit2idx[digit[0]] = i
+
+    focus_idx =[]
+    for digit in focus_list: 
+        focus_idx.append(digit2idx[digit])
+    
+    data = np.stack(np.concatenate(data_dic['dat'][focus_idx])).reshape(-1, 16*20)
+    print(data)
+    return data 
+
+
+"""def load_mnist():
+    list_name = ['train-images', 'train-labels', 't10k-images', 't10kimages']
+    for name in list_name: 
+        mnist_url = f'http://yann.lecun.com/exdb/mnist/{name}-idx3-ubyte.gz'
+        r = requests.get(mnist_url, allow_redirects=True)
+        filename = f'mnist-{name}.gz'
+        open('data/' + filename, 'wb').write(r.content)
+        print(f'Download completed, data available in /data/{name}-idx3-ubyte.gz')"""
+
 def fetch_alpha_digits_data():
     alphadigs_url = 'https://cs.nyu.edu/~roweis/data/binaryalphadigs.mat'
     r = requests.get(alphadigs_url, allow_redirects=True)
@@ -24,7 +59,6 @@ def fetch_mnist_digits_data(data_length):
     X[X < 125] = 0 
     X[X >= 125] = 1
 
-
     #train_length = (int)(data_length*test_train)
 
     X_train, X_test = X[:data_length, :], X[data_length:data_length+10000, :]
@@ -35,41 +69,17 @@ def fetch_mnist_digits_data(data_length):
     y_train = LabelBinarizer().fit_transform(y_train)
     y_test = LabelBinarizer().fit_transform(y_test)
     return X_train, X_test, y_train, y_test
-    
-def lire_alpha_digit(digits_list):
-    """Read alpha_digit data from specific digits_list
-
-    Keyword arguments:
-    digits_list -- list of digits to be fetched as str
-    ['0', '2', 'F', 'Z']
-    
-    Return: 
-    alpha digits data regarding the input digits as a np.array matrix
-    (row is a data point, columns are the features of each picture )
-    """
-    # check if data is in data/ folder 
-    if os.path.exists('data/binaryalphadigs.mat'):
-        print('File already downloaded, using version in data folder..')
-    # download it if necessary
-    else:
-        print('Fetching data on internet...')
-        fetch_alpha_digits_data()
-    # load data 
-    alphadigs_dict = sio.loadmat('/Users/margauxboscary/Downloads/DBN-main/data/binaryalphadigs.mat')
-    
-    # filter digits
-    digit2idx = {}
-    for i, digit in enumerate(alphadigs_dict['classlabels'][0]):
-        digit2idx[digit[0]] = i
-    
-    # collect indexes 
-    idxs = []
-    for digit in digits_list:
-        idxs.append(digit2idx[digit])
-    #return alphadigs_dict['dat'][idxs]
-    # Adapter au format (n, p), chaque colonne designe un pixel et chaque ligne une image
-    return np.stack(np.concatenate(alphadigs_dict['dat'][idxs])).reshape(-1, 20*16)
 
 def sigmoid(x):
-    return expit(x)
-    
+  return (1 / (1 + np.exp(-x)))
+
+def plot_examples_alphadigits(X_train, x_generated, nb_iterations, outputpath = '../images/'):
+    """
+    takes as input X_train (alphadigits stacked into rows) and x_generated a tensor of dimensiosn n_images x 20 x 16
+    plots a comparaison between generated and training examples..
+    """
+    fig = plt.figure(figsize=(8, 8))
+    n_generated = x_generated.shape[0]
+    columns = min(n_generated, 4)
+    rows = 2
+    samples = np.random.choice(np.arange(X_train.shape[0]), size=columns, replace=False)

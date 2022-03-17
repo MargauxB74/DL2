@@ -1,9 +1,9 @@
-from utils import load_mnist
 
+import utils 
 import principal_DNN_MNIST as DNN
 import principal_DBN_alpha as DBN
 
-X_train, X_test, y_train, y_test = load_mnist()
+X_train, X_test, y_train, y_test = utils.fetch_mnist_digits_data(6000)
 
 p = X_train.shape[1]
 q = 10
